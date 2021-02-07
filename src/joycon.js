@@ -1,4 +1,4 @@
-import * as PacketParser from './parse.js';
+import * as PacketParser from "./parse.js";
 
 /**
  * Concatenates two typed arrays.
@@ -37,11 +37,17 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async open() {
+  open() {
     if (!this.device.opened) {
-      await this.device.open();
+      var that = this;
+      return this.device.open().then(() => {
+        that.device.addEventListener("inputreport", that._onInputReport.bind(that));
+      });
+    } else {
+      return this.device.open().then(() => {
+        this.device.addEventListener("inputreport", this._onInputReport.bind(this));
+      });
     }
-    this.device.addEventListener('inputreport', this._onInputReport.bind(this));
   }
 
   /**
@@ -49,31 +55,20 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async getRequestDeviceInfo() {
+  getRequestDeviceInfo() {
     const outputReportID = 0x01;
     const subcommand = [0x02];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subcommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
-
-    return new Promise((resolve) => {
-      const onDeviceInfo = ({ detail: deviceInfo }) => {
-        this.removeEventListener('deviceinfo', onDeviceInfo);
-        delete deviceInfo._raw;
-        delete deviceInfo._hex;
-        resolve(deviceInfo);
-      };
-      this.addEventListener('deviceinfo', onDeviceInfo);
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subcommand];
+    this.device.sendReport(outputReportID, new Uint8Array(data)).then(() => {
+      return new Promise((resolve) => {
+        const onDeviceInfo = ({ detail: deviceInfo }) => {
+          this.removeEventListener("deviceinfo", onDeviceInfo);
+          delete deviceInfo._raw;
+          delete deviceInfo._hex;
+          resolve(deviceInfo);
+        };
+        this.addEventListener("deviceinfo", onDeviceInfo);
+      });
     });
   }
 
@@ -82,31 +77,20 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async getBatteryLevel() {
+  getBatteryLevel() {
     const outputReportID = 0x01;
     const subCommand = [0x50];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subCommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
-
-    return new Promise((resolve) => {
-      const onBatteryLevel = ({ detail: batteryLevel }) => {
-        this.removeEventListener('batterylevel', onBatteryLevel);
-        delete batteryLevel._raw;
-        delete batteryLevel._hex;
-        resolve(batteryLevel);
-      };
-      this.addEventListener('batterylevel', onBatteryLevel);
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subCommand];
+    this.device.sendReport(outputReportID, new Uint8Array(data)).then(() => {
+      return new Promise((resolve) => {
+        const onBatteryLevel = ({ detail: batteryLevel }) => {
+          this.removeEventListener("batterylevel", onBatteryLevel);
+          delete batteryLevel._raw;
+          delete batteryLevel._hex;
+          resolve(batteryLevel);
+        };
+        this.addEventListener("batterylevel", onBatteryLevel);
+      });
     });
   }
 
@@ -115,22 +99,11 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async enableSimpleHIDMode() {
+  enableSimpleHIDMode() {
     const outputReportID = 0x01;
     const subcommand = [0x03, 0x3f];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subcommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subcommand];
+    return this.device.sendReport(outputReportID, new Uint8Array(data));
   }
 
   /**
@@ -138,22 +111,11 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async enableStandardFullMode() {
+  enableStandardFullMode() {
     const outputReportID = 0x01;
     const subcommand = [0x03, 0x30];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subcommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subcommand];
+    return this.device.sendReport(outputReportID, new Uint8Array(data));
   }
 
   /**
@@ -161,22 +123,11 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async enableIMUMode() {
+  enableIMUMode() {
     const outputReportID = 0x01;
     const subcommand = [0x40, 0x01];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subcommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subcommand];
+    return this.device.sendReport(outputReportID, new Uint8Array(data));
   }
 
   /**
@@ -184,22 +135,11 @@ class JoyCon extends EventTarget {
    *
    * @memberof JoyCon
    */
-  async disableIMUMode() {
+  disableIMUMode() {
     const outputReportID = 0x01;
     const subcommand = [0x40, 0x00];
-    const data = [
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-      ...subcommand,
-    ];
-    await this.device.sendReport(outputReportID, new Uint8Array(data));
+    const data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ...subcommand];
+    return this.device.sendReport(outputReportID, new Uint8Array(data));
   }
 
   /**
@@ -215,14 +155,11 @@ class JoyCon extends EventTarget {
       return;
     }
 
-    data = concatTypedArrays(
-      new Uint8Array([reportId]),
-      new Uint8Array(data.buffer)
-    );
+    data = concatTypedArrays(new Uint8Array([reportId]), new Uint8Array(data.buffer));
     const hexData = data.map((byte) => byte.toString(16));
 
     let packet = {
-      inputReportID: PacketParser.parseInputReportID(data, hexData),
+      inputReportID: PacketParser.parseInputReportID(data, hexData)
     };
 
     switch (reportId) {
@@ -231,7 +168,7 @@ class JoyCon extends EventTarget {
           ...packet,
           buttonStatus: PacketParser.parseButtonStatus(data, hexData),
           analogStick: PacketParser.parseAnalogStick(data, hexData),
-          filter: PacketParser.parseFilter(data, hexData),
+          filter: PacketParser.parseFilter(data, hexData)
         };
         break;
       }
@@ -245,7 +182,7 @@ class JoyCon extends EventTarget {
           buttonStatus: PacketParser.parseCompleteButtonStatus(data, hexData),
           analogStickLeft: PacketParser.parseAnalogStickLeft(data, hexData),
           analogStickRight: PacketParser.parseAnalogStickRight(data, hexData),
-          vibrator: PacketParser.parseVibrator(data, hexData),
+          vibrator: PacketParser.parseVibrator(data, hexData)
         };
 
         if (reportId === 0x21) {
@@ -253,34 +190,18 @@ class JoyCon extends EventTarget {
             ...packet,
             ack: PacketParser.parseAck(data, hexData),
             subcommandID: PacketParser.parseSubcommandID(data, hexData),
-            subcommandReplyData: PacketParser.parseSubcommandReplyData(
-              data,
-              hexData
-            ),
-            deviceInfo: PacketParser.parseDeviceInfo(data, hexData),
+            subcommandReplyData: PacketParser.parseSubcommandReplyData(data, hexData),
+            deviceInfo: PacketParser.parseDeviceInfo(data, hexData)
           };
         }
 
         if (reportId === 0x30) {
-          const accelerometers = PacketParser.parseAccelerometers(
-            data,
-            hexData
-          );
+          const accelerometers = PacketParser.parseAccelerometers(data, hexData);
           const gyroscopes = PacketParser.parseGyroscopes(data, hexData);
-          const rps = PacketParser.calculateActualGyroscope(
-            gyroscopes.map((g) => g.map((v) => v.rps))
-          );
-          const dps = PacketParser.calculateActualGyroscope(
-            gyroscopes.map((g) => g.map((v) => v.dps))
-          );
-          const acc = PacketParser.calculateActualAccelerometer(
-            accelerometers.map((a) => [a.x.acc, a.y.acc, a.z.acc])
-          );
-          const quaternion = PacketParser.toQuaternion(
-            rps,
-            acc,
-            device.productId
-          );
+          const rps = PacketParser.calculateActualGyroscope(gyroscopes.map((g) => g.map((v) => v.rps)));
+          const dps = PacketParser.calculateActualGyroscope(gyroscopes.map((g) => g.map((v) => v.dps)));
+          const acc = PacketParser.calculateActualAccelerometer(accelerometers.map((a) => [a.x.acc, a.y.acc, a.z.acc]));
+          const quaternion = PacketParser.toQuaternion(rps, acc, device.productId);
 
           packet = {
             ...packet,
@@ -289,17 +210,11 @@ class JoyCon extends EventTarget {
             actualAccelerometer: acc,
             actualGyroscope: {
               dps: dps,
-              rps: rps,
+              rps: rps
             },
-            actualOrientation: PacketParser.toEulerAngles(
-              rps,
-              acc,
-              device.productId
-            ),
-            actualOrientationQuaternion: PacketParser.toEulerAnglesQuaternion(
-              quaternion
-            ),
-            quaternion: quaternion,
+            actualOrientation: PacketParser.toEulerAngles(rps, acc, device.productId),
+            actualOrientationQuaternion: PacketParser.toEulerAnglesQuaternion(quaternion),
+            quaternion: quaternion
           };
         }
         break;
@@ -321,7 +236,7 @@ class JoyCon extends EventTarget {
    * @memberof JoyCon
    */
   _receiveDeviceInfo(deviceInfo) {
-    this.dispatchEvent(new CustomEvent('deviceinfo', { detail: deviceInfo }));
+    this.dispatchEvent(new CustomEvent("deviceinfo", { detail: deviceInfo }));
   }
 
   /**
@@ -331,9 +246,7 @@ class JoyCon extends EventTarget {
    * @memberof JoyCon
    */
   _receiveBatteryLevel(batteryLevel) {
-    this.dispatchEvent(
-      new CustomEvent('batterylevel', { detail: batteryLevel })
-    );
+    this.dispatchEvent(new CustomEvent("batterylevel", { detail: batteryLevel }));
   }
 }
 
@@ -370,7 +283,7 @@ class JoyConLeft extends JoyCon {
     delete packet.buttonStatus.home;
     delete packet.buttonStatus.rightStick;
 
-    this.dispatchEvent(new CustomEvent('hidinput', { detail: packet }));
+    this.dispatchEvent(new CustomEvent("hidinput", { detail: packet }));
   }
 }
 
@@ -407,7 +320,7 @@ class JoyConRight extends JoyCon {
     delete packet.buttonStatus.capture;
     delete packet.buttonStatus.leftStick;
 
-    this.dispatchEvent(new CustomEvent('hidinput', { detail: packet }));
+    this.dispatchEvent(new CustomEvent("hidinput", { detail: packet }));
   }
 }
 
